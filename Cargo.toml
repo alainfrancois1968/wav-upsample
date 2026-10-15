@@ -1,0 +1,28 @@
+[package]
+name = "wav-upsample"
+version = "1.0.0"
+edition = "2021"
+description = "Offline high-quality WAV resampler (polyphase windowed-sinc, Rayon)"
+license = "MIT"
+readme = "README.md"
+
+[[bin]]
+name = "wav-upsample"
+path = "src/main.rs"
+
+[lib]
+name = "wav_upsample"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+hound = "3.5"
+rayon = "1"
+rustfft = "6"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
