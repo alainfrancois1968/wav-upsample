@@ -175,6 +175,19 @@ fn main() -> Result<()> {
         let (spec, channels) = wavio::read_wav(&args.input)?;
         let frames = channels[0].len();
         print_input(&spec, frames);
+
+        if spec.sample_rate == args.rate
+            && spec.bits_per_sample == args.bits
+            && spec.sample_format == SampleFormat::Int
+        {
+            println!("no action has been taken");
+            println!(
+                "reason:    input already matches target rate ({} Hz) and bit depth ({}-bit)",
+                args.rate, args.bits
+            );
+            return Ok(());
+        }
+
         if spec.sample_rate == args.rate {
             println!("ratio:     1/1 (bit depth / dither only, no resampling filter)");
         } else {
@@ -211,6 +224,17 @@ fn main() -> Result<()> {
     let started = Instant::now();
     let report = wavio::convert_file(&args.input, &output, &settings)?;
     let elapsed = started.elapsed();
+
+    // No-op path: rate and bit depth already match
+    if report.shaper == "no action" {
+        print_input(&report.spec_in, report.frames_in as usize);
+        println!("no action has been taken");
+        println!(
+            "reason:    input already matches target rate ({} Hz) and bit depth ({}-bit)",
+            args.rate, args.bits
+        );
+        return Ok(());
+    }
 
     print_input(&report.spec_in, report.frames_in as usize);
     let direction = match report.spec_in.sample_rate.cmp(&args.rate) {

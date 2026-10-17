@@ -113,6 +113,24 @@ pub fn convert_file(input: &Path, output: &Path, settings: &Settings) -> Result<
 
     let (spec_in, channels) = read_wav(input)?;
     let frames_in = channels[0].len();
+
+    // No-op when sample rate and bit depth already match (and input is integer PCM)
+    if spec_in.sample_rate == settings.rate
+        && spec_in.bits_per_sample == settings.bits
+        && spec_in.sample_format == SampleFormat::Int
+    {
+        return Ok(Report {
+            spec_in,
+            frames_in: frames_in as u64,
+            frames_out: frames_in as u64,
+            design: None,
+            peak: 0.0,
+            samples_over_full_scale: 0,
+            clipped: 0,
+            shaper: "no action".into(),
+        });
+    }
+
     let fs_in = spec_in.sample_rate;
     let frames_out = output_frames(frames_in, fs_in, settings.rate);
 
